@@ -28,15 +28,22 @@ double distanceSq(const Point &a, const Point &b)
     return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
 }
 
-// Determine orientation of ordered triplet (p, q, r) O(1)
-// 0 -> collinear, 1 -> clockwise, 2 -> counter-clockwise
+// Determine orientation of ordered triplet (p, q, r)
+// Returns:
+// 0 -> collinear
+// 1 -> clockwise
+// 2 -> counter-clockwise
 int orientation(const Point &p, const Point &q, const Point &r)
 {
-    double val = (q.y - p.y) * (r.x - q.x) - (q.x - p.x) * (r.y - q.y);
+    double val = (q.x - p.x) * (r.y - p.y) -
+                 (q.y - p.y) * (r.x - p.x);
+
     if (fabs(val) < 1e-9)
-        return 0;
-    return (val > 0) ? 1 : 2;
+        return 0;          // collinear
+
+    return (val > 0) ? 2 : 1; // CCW -> 2, CW -> 1
 }
+
 
 // Global anchor point for sorting
 Point anchor;
