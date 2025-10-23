@@ -28,7 +28,7 @@ double distanceSq(const Point &a, const Point &b)
     return (a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y);
 }
 
-// Determine orientation of ordered triplet (p, q, r)
+// Determine orientation of ordered triplet (p, q, r) O(1)
 // Returns:
 // 0 -> collinear
 // 1 -> clockwise
@@ -60,10 +60,10 @@ void sortByAngleAndDistance(vector<pair<Point, double>> &pointAngles)
     sort(pointAngles.begin(), pointAngles.end(),
          [](const pair<Point, double> &a, const pair<Point, double> &b)
          {
-             if (fabs(a.second - b.second) > 1e-9)
-                 return a.second < b.second; // Sort by angle
-             // If angles are equal, sort by distance from anchor
-             return distanceSq(anchor, a.first) < distanceSq(anchor, b.first);
+            if (fabs(a.second - b.second) > 1e-9)
+                return a.second < b.second; // Sort by angle
+            // If angles are equal, sort by distance from anchor
+            return distanceSq(anchor, a.first) < distanceSq(anchor, b.first);
          });
 }
 
