@@ -2,7 +2,6 @@
 #include <bits/stdc++.h>
 #include <SFML/Graphics.hpp>
 
-
 using namespace std;
 
 struct Point
@@ -39,11 +38,10 @@ int orientation(const Point &p, const Point &q, const Point &r)
                  (q.y - p.y) * (r.x - p.x);
 
     if (fabs(val) < 1e-9)
-        return 0;          // collinear
+        return 0; // collinear
 
     return (val > 0) ? 2 : 1; // CCW -> 2, CW -> 1
 }
-
 
 // Global anchor point for sorting
 Point anchor;
@@ -54,16 +52,16 @@ double polarAngle(const Point &p, const Point &anchor = anchor)
     return atan2(p.y - anchor.y, p.x - anchor.x);
 }
 
-// Sort points by angle only using selection sort O(n log n)
+// Sort points by angle only using sort O(n log n)
 void sortByAngleAndDistance(vector<pair<Point, double>> &pointAngles)
 {
     sort(pointAngles.begin(), pointAngles.end(),
          [](const pair<Point, double> &a, const pair<Point, double> &b)
          {
-            if (fabs(a.second - b.second) > 1e-9)
-                return a.second < b.second; // Sort by angle
-            // If angles are equal, sort by distance from anchor
-            return distanceSq(anchor, a.first) < distanceSq(anchor, b.first);
+             if (fabs(a.second - b.second) > 1e-9)
+                 return a.second < b.second; // Sort by angle
+             // If angles are equal, sort by distance from anchor
+             return distanceSq(anchor, a.first) < distanceSq(anchor, b.first);
          });
 }
 
@@ -90,7 +88,7 @@ void sortByPolarAngle(vector<Point> &points)
         pointAngles.push_back({points[i], angle});
     }
 
-    // Sort using selection sort
+    // Sort using merge sort
     sortByAngleAndDistance(pointAngles);
 
     // Remove points with same angle (keep the farthest one)
@@ -102,12 +100,7 @@ void sortByPolarAngle(vector<Point> &points)
         // If next angle is same, keep the farthest one
         if (i < pointAngles.size() - 1 && fabs(pointAngles[i].second - pointAngles[i + 1].second) < 1e-9)
         {
-            double d1 = distanceSq(anchor, pointAngles[i].first);
-            double d2 = distanceSq(anchor, pointAngles[i + 1].first);
-            if (d1 > d2)
-                filtered.push_back(pointAngles[i].first);
-            else
-                filtered.push_back(pointAngles[i + 1].first);
+            filtered.push_back(pointAngles[i + 1].first);
             i++; // skip next because we already compared
         }
         else
@@ -121,12 +114,6 @@ void sortByPolarAngle(vector<Point> &points)
 // Graham Scan Algorithm to find Convex Hull O(n log n due to sorting)
 vector<Point> grahamScan(vector<Point> points)
 {
-    int n = points.size();
-    if (n < 3)
-    {
-        cout << "Convex hull not possible (less than 3 points)." << endl;
-        return {};
-    }
 
     // Step 1
     // Find anchor
@@ -176,17 +163,44 @@ vector<Point> grahamScan(vector<Point> points)
 
 int main()
 {
-    vector<Point> points = {
-        {0, 0}, {1, 2}, {2, 1}, {2, 4}, {3, 3}, {4, 0}, {1, 1}};
+    // vector<Point> points = {
+    //     {0, 0}, {1, 2}, {2, 1}, {2, 4}, {3, 3}, {4, 0}, {1, 1}};
+
+    vector<Point> points;
+    int n;
+
+    do
+    {
+        cout << "Enter number of points: ";
+        cin >> n;
+
+        if (n < 3)
+        {
+            cout << "Convex hull not possible (less than 3 points)." << endl;
+        }
+
+    } while (n < 3);
+
+    cout << "Enter points as x y (space-separated):\n";
+    for (int i = 0; i < n; i++)
+    {
+        Point p;
+        cout << "Point " << i + 1 << ": ";
+        cin >> p.x >> p.y;
+        points.push_back(p);
+    }
 
     vector<Point> hull = grahamScan(points);
+
+    if (hull.empty())
+        return 0;
 
     cout << "Convex Hull Points (in order):\n";
     for (auto &p : hull)
     {
         cout << "(" << p.x << ", " << p.y << ")\n";
     }
-    
+
     // --- SFML 3.x Window creation ---
     sf::RenderWindow window(sf::VideoMode(sf::Vector2u(600, 500)), "Graham Scan Visualization");
     window.setFramerateLimit(60);
@@ -196,7 +210,8 @@ int main()
     double minY = numeric_limits<double>::max();
     double maxY = numeric_limits<double>::lowest();
 
-    for (auto& p : points) {
+    for (auto &p : points)
+    {
         minX = min(minX, p.x);
         maxX = max(maxX, p.x);
         minY = min(minY, p.y);
@@ -205,19 +220,23 @@ int main()
 
     double rangeX = maxX - minX;
     double rangeY = maxY - minY;
-    if (rangeX == 0) rangeX = 1;
-    if (rangeY == 0) rangeY = 1;
+    if (rangeX == 0)
+        rangeX = 1;
+    if (rangeY == 0)
+        rangeY = 1;
 
     const float padding = 50.0f;
     float scaleX = (window.getSize().x - 2 * padding) / rangeX;
     float scaleY = (window.getSize().y - 2 * padding) / rangeY;
     float scale = min(scaleX, scaleY);
 
-    float offsetX = padding - minX * scale;
-    float offsetY = window.getSize().y - padding + minY * scale;
+    float offsetX = padding - static_cast<float>(minX) * scale;
+    float offsetY = window.getSize().y - padding + static_cast<float>(maxY) * scale;
 
-    while (window.isOpen()) {
-        if (auto event = window.pollEvent()) {
+    while (window.isOpen())
+    {
+        if (auto event = window.pollEvent())
+        {
             if (event->is<sf::Event::Closed>())
                 window.close();
         }
@@ -225,7 +244,8 @@ int main()
         window.clear(sf::Color::White);
 
         // draw all points
-        for (auto& p : points) {
+        for (auto &p : points)
+        {
             sf::CircleShape point(points.size() < 100 ? 5.0f : 2.5f);
             point.setFillColor(sf::Color::Blue);
             point.setOrigin({2.5f, 2.5f});
@@ -235,22 +255,19 @@ int main()
         }
 
         // draw hull edges
-        for (size_t i = 0; i < hull.size(); i++) {
+        for (size_t i = 0; i < hull.size(); i++)
+        {
             Point p1 = hull[i];
             Point p2 = hull[(i + 1) % hull.size()];
 
             std::array<sf::Vertex, 2> line = {
                 sf::Vertex{{offsetX + static_cast<float>(p1.x) * scale, offsetY - static_cast<float>(p1.y) * scale}, sf::Color::Red},
-                sf::Vertex{{offsetX + static_cast<float>(p2.x) * scale, offsetY - static_cast<float>(p2.y) * scale}, sf::Color::Red}
-            };
+                sf::Vertex{{offsetX + static_cast<float>(p2.x) * scale, offsetY - static_cast<float>(p2.y) * scale}, sf::Color::Red}};
             window.draw(line.data(), line.size(), sf::PrimitiveType::Lines);
         }
 
         window.display();
     }
-
-
-
 
     return 0;
 }
